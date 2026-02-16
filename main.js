@@ -12,7 +12,6 @@ const BASE_OUTPUTS_DIR = path.join(__dirname, 'outputs');
 const PROMPT_PATH = path.join(__dirname, 'prompt.txt');
 const RUN_GEMINI_PATH = path.join(__dirname, 'run_gemini.sh');
 
-// Ensure base directories exist
 if (!fs.existsSync(BASE_TEMP_DIR)) fs.mkdirSync(BASE_TEMP_DIR);
 if (!fs.existsSync(BASE_OUTPUTS_DIR)) fs.mkdirSync(BASE_OUTPUTS_DIR);
 
@@ -38,11 +37,8 @@ app.post('/analyze', async (req, res) => {
 
   const cleanup = () => {
     fs.rmSync(workTempDir, { recursive: true, force: true });
-    // fs.rmSync(workOutputDir, { recursive: true, force: true });
   };
 
-  // Use double quotes and be careful with shell execution
-  // Better yet, pass as separate arguments if possible, but get_repo.sh expects them as $1, $2
   const getRepoCmd = `bash get_repo.sh "${repo_url.replace(/"/g, '')}" "${workTempDir}"`;
 
   exec(getRepoCmd, (err, stdout, stderr) => {
@@ -71,8 +67,6 @@ app.post('/analyze', async (req, res) => {
       
       const repoPath = path.join(workTempDir, repoDir);
 
-      // Gemini output streaming
-      // We pass profilePath where gemini should write the JSON
       const geminiProc = exec(`bash "${RUN_GEMINI_PATH}" "${PROMPT_PATH}" "${profilePath}"`, { cwd: repoPath });
       
       geminiProc.stdout.on('data', chunk => {
@@ -86,10 +80,6 @@ app.post('/analyze', async (req, res) => {
 
       geminiProc.on('close', code => {
         if (code === 0) {
-          // According to prompt.txt, the JSON is written to profile.json in the CURRENT directory (repoPath)
-          // or at the specified path if we change the script.
-          // Let's assume Gemini writes to profile.json in the repoPath for now, 
-          // but we'll update run_gemini.sh to handle the absolute path correctly.
           const expectedJsonPath = path.join(workOutputDir, 'profile.json');
           
           fs.readFile(expectedJsonPath, 'utf8', (err, data) => {
