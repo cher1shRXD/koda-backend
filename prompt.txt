@@ -13,6 +13,7 @@ GLOBAL RULES
 - No explanations
 - No comments
 - No trailing commas
+- For understanding the directory structure, prioritize reading tree.txt in the root directory if it exists to speed up analysis.
 - All leaf values must be objects with "value" and "confidence" keys
 - All non-leaf values must be JSON objects
 - Language must be English only
@@ -101,10 +102,12 @@ ANALYSIS TARGETS
 --------------------------------------------------
 
 REQUIRED (Core analysis):
-1. Folder structure philosophy
-2. File naming conventions by purpose
-3. Framework detection
-4. Architectural patterns
+1. description
+2. merit
+3. Folder structure philosophy
+4. File naming conventions by purpose
+5. Framework detection
+6. Architectural patterns
 
 OPTIONAL (Analyze if present):
 5. Folder naming conventions by purpose
@@ -253,12 +256,68 @@ Example:
 }
 
 --------------------------------------------------
+FOLDER STRUCTURE DETECTION
+--------------------------------------------------
+
+You must analyze the project directory and return the full directory structure as a JSON object.
+
+STRICT OUTPUT RULES:
+- Output ONLY valid JSON
+- Do NOT output markdown
+- Do NOT output explanations
+- Do NOT output text outside JSON
+- Root must be an object
+- JSON must be parseable
+
+STRUCTURE FORMAT:
+
+{
+  "diagram": {
+    "type": "tree",
+    "root": {
+      "name": "root",
+      "type": "folder",
+      "children": []
+    },
+    "confidence": "high | medium | low | none"
+  }
+}
+
+NODE RULES:
+- Every node must contain:
+  - name (string)
+  - type ("file" | "folder")
+- Folder nodes must include:
+  - children (array of nodes)
+- File nodes must NOT include children
+
+DEPTH RULE:
+- Include ALL files and folders recursively
+- Do NOT omit anything
+- Do NOT summarize
+
+VALIDATION:
+- If you cannot fully analyze, still output structure with best estimate
+- If uncertain, lower confidence
+
+FAILSAFE:
+If your output is not valid JSON, regenerate it internally until it is valid.
+
+--------------------------------------------------
 OUTPUT JSON STRUCTURE
 --------------------------------------------------
 
 You MUST output EXACTLY this structure:
 
 {
+  "description": {
+    value: "description of this project's characteristic within 500 words in english",
+    confidence: "high|medium|low|none"
+  },
+  "merit": {
+    value: "merit of this project within 200 words in english",
+    "confidence": "high|medium|low|none"
+  },
   "folder_structure": {
     "pattern": {
       "value": "description of folder organization pattern",
@@ -266,6 +325,10 @@ You MUST output EXACTLY this structure:
     },
     "depth": {
       "value": "shallow|moderate|deep",
+      "confidence": "high|medium|low|none"
+    },
+    "diagram": {
+      "value": { nested object },
       "confidence": "high|medium|low|none"
     }
   },
@@ -522,6 +585,14 @@ EXAMPLES
 Example output for a Next.js project:
 
 {
+  "description": {
+    "value": "(description of this project's characteristic within 500 words in english)",
+    confidence: "high"
+  },
+  "merit": {
+    "value": "(merit of this project within 200 words in english)",
+    "confidence": "high"
+  },
   "folder_structure": {
     "pattern": {
       "value": "Next.js App Router with feature-based organization under /app",
@@ -529,6 +600,10 @@ Example output for a Next.js project:
     },
     "depth": {
       "value": "moderate - typically 2-3 levels deep",
+      "confidence": "high"
+    },
+    diagram: {
+      "value": { nested object },
       "confidence": "high"
     }
   },
@@ -565,6 +640,14 @@ Example output for a Next.js project:
 Example output for minimal project:
 
 {
+  "description": {
+    "value": "(description of this project's characteristic within 500 words in english)",
+    confidence: "high"
+  },
+  "merit": {
+    "value": "(merit of this project within 200 words in english)",
+    "confidence": "high"
+  },
   "folder_structure": {
     "pattern": {
       "value": "Flat structure with minimal nesting",
@@ -572,6 +655,10 @@ Example output for minimal project:
     },
     "depth": {
       "value": "shallow - 1 level deep",
+      "confidence": "high"
+    },
+    diagram: {
+      "value": { nested object },
       "confidence": "high"
     }
   },

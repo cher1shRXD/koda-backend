@@ -26,4 +26,7 @@ if [ -z "$DIR" ]; then
   exit 1
 fi
 
+# Generate tree.txt for faster analysis
+(cd "$DIR" && tree -a -L 4 -I "node_modules|.git" > tree.txt)
+
 echo "Repository downloaded to: $(pwd)/$DIR"
